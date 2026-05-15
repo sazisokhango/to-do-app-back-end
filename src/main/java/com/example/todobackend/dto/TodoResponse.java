@@ -12,5 +12,6 @@ public record TodoResponse(
         Priority priority,
         LocalDate dueDate,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        LocalDateTime deletedAt
 ) {}

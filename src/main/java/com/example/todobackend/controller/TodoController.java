@@ -33,6 +33,11 @@ public class TodoController {
         return ResponseEntity.ok(todoService.getTodos(priority, completed));
     }
 
+    @GetMapping("/deleted")
+    public ResponseEntity<List<TodoResponse>> getDeletedTodos() {
+        return ResponseEntity.ok(todoService.getDeletedTodos());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<TodoResponse> getTodoById(@PathVariable Long id) {
         return ResponseEntity.ok(todoService.getTodoById(id));
@@ -49,5 +54,10 @@ public class TodoController {
     public ResponseEntity<Void> deleteTodo(@PathVariable Long id) {
         todoService.deleteTodo(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/restore")
+    public ResponseEntity<TodoResponse> restoreTodo(@PathVariable Long id) {
+        return ResponseEntity.ok(todoService.restoreTodo(id));
     }
 }
