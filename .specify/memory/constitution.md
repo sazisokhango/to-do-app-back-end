@@ -1,50 +1,122 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Version change: (new) → 1.0.0
+Added sections:
+  - Core Principles (I–V)
+  - Technology Stack
+  - API & Development Standards
+  - Governance
+Modified principles: N/A (initial ratification)
+Removed sections: N/A
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ aligned (Spring Boot / PostgreSQL context reflected)
+  - .specify/templates/spec-template.md ✅ aligned (no mandatory section changes required)
+  - .specify/templates/tasks-template.md ✅ aligned (task categories reflect layered architecture)
+Follow-up TODOs: none — all placeholders resolved
+-->
+
+# To-Do Back End Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. REST API First
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every feature MUST be exposed exclusively through a RESTful HTTP API. HTTP methods
+and status codes are non-negotiable:
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- `POST   /api/todo`      → `201 Created`
+- `GET    /api/todo`      → `200 OK`
+- `GET    /api/todo/{id}` → `200 OK`
+- `PUT    /api/todo/{id}` → `200 OK`
+- `DELETE /api/todo/{id}` → `204 No Content`
+- Item not found          → `404 Not Found`
+- Invalid request body    → `400 Bad Request`
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+All error responses MUST follow this exact JSON shape:
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+```json
+{ "status": 404, "error": "Not Found", "message": "Could not find the item" }
+```
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+No endpoint MAY return a different error structure.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### II. Strict Input Validation
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+All incoming data MUST be validated before it reaches the service layer:
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- `title` MUST be present and MUST NOT exceed 255 characters.
+- `priority` MUST default to `MEDIUM` when omitted; valid values are `LOW`, `MEDIUM`, `HIGH`.
+- `dueDate` MUST NOT be a date in the past.
+
+Validation failures MUST produce a `400 Bad Request` response. No invalid data may
+reach the database.
+
+### III. Layered Architecture (NON-NEGOTIABLE)
+
+The codebase MUST follow a strict three-layer separation:
+
+```
+Controller  →  Service  →  Repository
+```
+
+- **Controller**: HTTP boundary only — maps requests/responses, delegates to service.
+- **Service**: Business logic, validation orchestration, exception handling.
+- **Repository**: Data access only — no business logic permitted.
+
+DTOs (`TodoRequest`, `TodoResponse`) MUST be used at the API boundary. The `TodoItem`
+entity MUST NOT be exposed directly in controller responses.
+
+### IV. Consistent Error Handling
+
+A single, centralised exception handler (e.g. `@ControllerAdvice`) MUST intercept all
+unhandled exceptions and translate them into the standard error JSON shape. No
+controller method MAY return raw exception messages or stack traces to the client.
+
+### V. Frontend Compatibility
+
+CORS MUST be configured to allow requests from `http://localhost:4200`. No other
+cross-origin policy change may be introduced without amending this constitution.
+
+## Technology Stack
+
+- **Language**: Java 21
+- **Framework**: Spring Boot 3.5.x
+- **Build Tool**: Maven
+- **Database**: PostgreSQL
+  - Database name: `to_do`
+  - Username: `to_do_user`
+  - Password: `password`
+- **Base package**: `com.example.todobackend`
+
+No alternative language, framework, or database may be substituted without a
+constitution amendment.
+
+## API & Development Standards
+
+- Base path: `/api/todo`
+- All date-time fields serialised as ISO-8601 (`LocalDateTime` / `LocalDate`).
+- The `Priority` enum values are exactly: `LOW`, `MEDIUM`, `HIGH`.
+- Filtering on `GET /api/todo` MUST support query parameters `priority` and `completed`.
+- A `README.md` MUST be maintained at the project root explaining how to run the application.
+- Complexity MUST be justified. Any pattern beyond Controller → Service → Repository
+  (e.g., additional abstraction layers, event systems) requires explicit documentation
+  in the plan.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices for this project.
+Amendments require:
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+1. A documented reason for the change.
+2. An updated version number following semantic versioning:
+   - **MAJOR**: removal or redefinition of a principle.
+   - **MINOR**: new principle or section added.
+   - **PATCH**: clarifications or wording fixes.
+3. `LAST_AMENDED_DATE` updated to the date of the amendment.
+
+All implementation plans, task lists, and code reviews MUST verify compliance with
+these principles before proceeding. Refer to `specs/PRD.md` for the originating
+product requirements.
+
+**Version**: 1.0.0 | **Ratified**: 2026-05-15 | **Last Amended**: 2026-05-15
