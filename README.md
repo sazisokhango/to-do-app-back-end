@@ -26,13 +26,18 @@ API is available at `http://localhost:8080/api/todo`.
 
 ## Endpoints
 
-| Method | Path              | Description         | Status |
-|--------|-------------------|---------------------|--------|
-| POST   | `/api/todo`       | Create a task       | 201    |
-| GET    | `/api/todo`       | Get all tasks       | 200    |
-| GET    | `/api/todo/{id}`  | Get task by ID      | 200    |
-| PUT    | `/api/todo/{id}`  | Update a task       | 200    |
-| DELETE | `/api/todo/{id}`  | Delete a task       | 204    |
+| Method  | Path                      | Description              | Status |
+|---------|---------------------------|--------------------------|--------|
+| POST    | `/api/todo`               | Create a task            | 201    |
+| GET     | `/api/todo`               | Get all active tasks     | 200    |
+| GET     | `/api/todo/{id}`          | Get active task by ID    | 200    |
+| PUT     | `/api/todo/{id}`          | Update a task            | 200    |
+| DELETE  | `/api/todo/{id}`          | Soft delete a task       | 204    |
+| GET     | `/api/todo/deleted`       | Get all deleted tasks    | 200    |
+| PATCH   | `/api/todo/{id}/restore`  | Restore a deleted task   | 200    |
+
+> ⚠️ **Breaking change**: `DELETE /api/todo/{id}` now soft-deletes (hides) the task
+> instead of permanently removing it. Use `PATCH /api/todo/{id}/restore` to recover it.
 
 ### Filtering
 
@@ -42,15 +47,17 @@ GET /api/todo?completed=false
 GET /api/todo?priority=HIGH&completed=false
 ```
 
+Note: Filters only apply to active tasks — soft-deleted tasks are never included.
+
 ## Example Requests
 
 ```bash
 # Create a task
 curl -X POST http://localhost:8080/api/todo \
   -H "Content-Type: application/json" \
-  -d '{"title":"Buy groceries","priority":"HIGH","dueDate":"2026-12-31"}'
+  -d '{"title":"Buy groceries","priority":"HIGH","dueDate":"2099-12-31"}'
 
-# Get all tasks
+# Get all active tasks
 curl http://localhost:8080/api/todo
 
 # Get by ID
@@ -61,8 +68,14 @@ curl -X PUT http://localhost:8080/api/todo/1 \
   -H "Content-Type: application/json" \
   -d '{"title":"Buy groceries","completed":true}'
 
-# Delete
+# Soft delete a task
 curl -X DELETE http://localhost:8080/api/todo/1
+
+# View deleted tasks
+curl http://localhost:8080/api/todo/deleted
+
+# Restore a deleted task
+curl -X PATCH http://localhost:8080/api/todo/1/restore
 ```
 
 ## Validation Rules

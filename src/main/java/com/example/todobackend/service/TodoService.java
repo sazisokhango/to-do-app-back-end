@@ -8,6 +8,7 @@ import com.example.todobackend.exception.TodoNotFoundException;
 import com.example.todobackend.repository.TodoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -31,25 +32,25 @@ public class TodoService {
 
     public List<TodoResponse> getTodos(Priority priority, Boolean completed) {
         if (priority != null && completed != null) {
-            return todoRepository.findByPriorityAndCompleted(priority, completed)
+            return todoRepository.findByPriorityAndCompletedAndDeletedAtIsNull(priority, completed)
                     .stream().map(this::toResponse).toList();
         } else if (priority != null) {
-            return todoRepository.findByPriority(priority)
+            return todoRepository.findByPriorityAndDeletedAtIsNull(priority)
                     .stream().map(this::toResponse).toList();
         } else if (completed != null) {
-            return todoRepository.findByCompleted(completed)
+            return todoRepository.findByCompletedAndDeletedAtIsNull(completed)
                     .stream().map(this::toResponse).toList();
         }
-        return todoRepository.findAll().stream().map(this::toResponse).toList();
+        return todoRepository.findAllByDeletedAtIsNull().stream().map(this::toResponse).toList();
     }
 
     public TodoResponse getTodoById(Long id) {
-        return toResponse(todoRepository.findById(id)
+        return toResponse(todoRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new TodoNotFoundException(id)));
     }
 
     public TodoResponse updateTodo(Long id, TodoRequest request) {
-        TodoItem item = todoRepository.findById(id)
+        TodoItem item = todoRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new TodoNotFoundException(id));
         item.setTitle(request.getTitle());
         item.setDescription(request.getDescription());
@@ -62,10 +63,22 @@ public class TodoService {
     }
 
     public void deleteTodo(Long id) {
-        if (!todoRepository.existsById(id)) {
-            throw new TodoNotFoundException(id);
-        }
-        todoRepository.deleteById(id);
+        TodoItem item = todoRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new TodoNotFoundException(id));
+        item.setDeletedAt(LocalDateTime.now());
+        todoRepository.save(item);
+    }
+
+    public List<TodoResponse> getDeletedTodos() {
+        return todoRepository.findAllByDeletedAtIsNotNull()
+                .stream().map(this::toResponse).toList();
+    }
+
+    public TodoResponse restoreTodo(Long id) {
+        TodoItem item = todoRepository.findByIdAndDeletedAtIsNotNull(id)
+                .orElseThrow(() -> new TodoNotFoundException(id));
+        item.setDeletedAt(null);
+        return toResponse(todoRepository.save(item));
     }
 
     private TodoResponse toResponse(TodoItem item) {
@@ -77,7 +90,8 @@ public class TodoService {
                 item.getPriority(),
                 item.getDueDate(),
                 item.getCreatedAt(),
-                item.getUpdatedAt()
+                item.getUpdatedAt(),
+                item.getDeletedAt()
         );
     }
 }
