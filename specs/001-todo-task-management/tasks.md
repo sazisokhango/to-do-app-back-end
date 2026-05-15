@@ -24,8 +24,8 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Purpose**: Project dependencies and configuration
 
-- [ ] T001 Add `spring-boot-starter-validation` and `postgresql` driver dependencies to `pom.xml`
-- [ ] T002 Configure PostgreSQL connection in `src/main/resources/application.properties` (url, username, password, JPA DDL auto, show-sql)
+- [x] T001 Add `spring-boot-starter-validation` and `postgresql` driver dependencies to `pom.xml`
+- [x] T002 Configure PostgreSQL connection in `src/main/resources/application.properties` (url, username, password, JPA DDL auto, show-sql)
 
 ---
 
@@ -35,14 +35,14 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **⚠️ CRITICAL**: Complete in order — Priority enum must exist before entities and DTOs.
 
-- [ ] T003 Create `Priority` enum (`LOW`, `MEDIUM`, `HIGH`) in `src/main/java/com/example/todobackend/enums/Priority.java`
-- [ ] T004 [P] Create `TodoItem` JPA entity with all fields, `@PrePersist`/`@PreUpdate` for timestamps, and `@Enumerated(STRING)` for priority in `src/main/java/com/example/todobackend/entity/TodoItem.java`
-- [ ] T005 [P] Create `TodoRequest` DTO with `@NotBlank`, `@Size(max=255)` on title and `@FutureOrPresent` on dueDate in `src/main/java/com/example/todobackend/dto/TodoRequest.java`
-- [ ] T006 [P] Create `TodoResponse` DTO with all fields matching the contract in `src/main/java/com/example/todobackend/dto/TodoResponse.java`
-- [ ] T007 [P] Create `TodoNotFoundException` extending `RuntimeException` in `src/main/java/com/example/todobackend/exception/TodoNotFoundException.java`
-- [ ] T008 Create `GlobalExceptionHandler` (`@RestControllerAdvice`) handling `TodoNotFoundException` → 404 and `MethodArgumentNotValidException` → 400, both returning the standard error JSON shape in `src/main/java/com/example/todobackend/exception/GlobalExceptionHandler.java`
-- [ ] T009 [P] Create `CorsConfig` implementing `WebMvcConfigurer` allowing all methods and headers from `http://localhost:4200` on `/api/**` in `src/main/java/com/example/todobackend/config/CorsConfig.java`
-- [ ] T010 Create `TodoRepository` extending `JpaRepository<TodoItem, Long>` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
+- [x] T003 Create `Priority` enum (`LOW`, `MEDIUM`, `HIGH`) in `src/main/java/com/example/todobackend/enums/Priority.java`
+- [x] T004 [P] Create `TodoItem` JPA entity with all fields, `@PrePersist`/`@PreUpdate` for timestamps, and `@Enumerated(STRING)` for priority in `src/main/java/com/example/todobackend/entity/TodoItem.java`
+- [x] T005 [P] Create `TodoRequest` DTO with `@NotBlank`, `@Size(max=255)` on title and `@FutureOrPresent` on dueDate in `src/main/java/com/example/todobackend/dto/TodoRequest.java`
+- [x] T006 [P] Create `TodoResponse` DTO with all fields matching the contract in `src/main/java/com/example/todobackend/dto/TodoResponse.java`
+- [x] T007 [P] Create `TodoNotFoundException` extending `RuntimeException` in `src/main/java/com/example/todobackend/exception/TodoNotFoundException.java`
+- [x] T008 Create `GlobalExceptionHandler` (`@RestControllerAdvice`) handling `TodoNotFoundException` → 404 and `MethodArgumentNotValidException` → 400, both returning the standard error JSON shape in `src/main/java/com/example/todobackend/exception/GlobalExceptionHandler.java`
+- [x] T009 [P] Create `CorsConfig` implementing `WebMvcConfigurer` allowing all methods and headers from `http://localhost:4200` on `/api/**` in `src/main/java/com/example/todobackend/config/CorsConfig.java`
+- [x] T010 Create `TodoRepository` extending `JpaRepository<TodoItem, Long>` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
 
 **Checkpoint**: Foundation ready — all shared classes exist. User story implementation can now begin.
 
@@ -54,8 +54,8 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Independent Test**: `POST /api/todo` with `{"title":"Test"}` returns `201` with `id`, `completed=false`, `priority="MEDIUM"`.
 
-- [ ] T011 [US1] Create `TodoService` with a `createTodo(TodoRequest)` method that defaults priority to `MEDIUM` if null and maps to/from `TodoItem` entity in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [ ] T012 [US1] Create `TodoController` with `POST /api/todo` endpoint annotated `@Valid`, delegating to `TodoService`, returning `ResponseEntity<TodoResponse>` with status `201` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+- [x] T011 [US1] Create `TodoService` with a `createTodo(TodoRequest)` method that defaults priority to `MEDIUM` if null and maps to/from `TodoItem` entity in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T012 [US1] Create `TodoController` with `POST /api/todo` endpoint annotated `@Valid`, delegating to `TodoService`, returning `ResponseEntity<TodoResponse>` with status `201` in `src/main/java/com/example/todobackend/controller/TodoController.java`
 
 **Checkpoint**: User Story 1 fully functional. `POST /api/todo` creates and returns a task.
 
@@ -67,9 +67,9 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Independent Test**: `GET /api/todo` returns `200` with a list; `GET /api/todo/1` returns the task; `GET /api/todo/999` returns `404`.
 
-- [ ] T013 [US2] Add `getAllTodos()` method to `TodoService` returning `List<TodoResponse>` in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [ ] T014 [US2] Add `getTodoById(Long id)` method to `TodoService` throwing `TodoNotFoundException` when not found in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [ ] T015 [US2] Add `GET /api/todo` and `GET /api/todo/{id}` endpoints to `TodoController` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+- [x] T013 [US2] Add `getAllTodos()` method to `TodoService` returning `List<TodoResponse>` in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T014 [US2] Add `getTodoById(Long id)` method to `TodoService` throwing `TodoNotFoundException` when not found in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T015 [US2] Add `GET /api/todo` and `GET /api/todo/{id}` endpoints to `TodoController` in `src/main/java/com/example/todobackend/controller/TodoController.java`
 
 **Checkpoint**: User Stories 1 and 2 independently functional.
 
@@ -81,8 +81,8 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Independent Test**: `PUT /api/todo/1` with new title returns `200` with updated title and refreshed `updatedAt`.
 
-- [ ] T016 [US3] Add `updateTodo(Long id, TodoRequest)` method to `TodoService` that applies all fields from the request, saves, and returns `TodoResponse` in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [ ] T017 [US3] Add `PUT /api/todo/{id}` endpoint annotated `@Valid` to `TodoController` returning `200` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+- [x] T016 [US3] Add `updateTodo(Long id, TodoRequest)` method to `TodoService` that applies all fields from the request, saves, and returns `TodoResponse` in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T017 [US3] Add `PUT /api/todo/{id}` endpoint annotated `@Valid` to `TodoController` returning `200` in `src/main/java/com/example/todobackend/controller/TodoController.java`
 
 **Checkpoint**: User Stories 1, 2, and 3 independently functional.
 
@@ -94,8 +94,8 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Independent Test**: `DELETE /api/todo/1` returns `204`; subsequent `GET /api/todo/1` returns `404`.
 
-- [ ] T018 [US4] Add `deleteTodo(Long id)` method to `TodoService` throwing `TodoNotFoundException` when not found in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [ ] T019 [US4] Add `DELETE /api/todo/{id}` endpoint to `TodoController` returning `ResponseEntity<Void>` with status `204` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+- [x] T018 [US4] Add `deleteTodo(Long id)` method to `TodoService` throwing `TodoNotFoundException` when not found in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T019 [US4] Add `DELETE /api/todo/{id}` endpoint to `TodoController` returning `ResponseEntity<Void>` with status `204` in `src/main/java/com/example/todobackend/controller/TodoController.java`
 
 **Checkpoint**: User Stories 1–4 independently functional. Full CRUD complete.
 
@@ -107,9 +107,9 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Independent Test**: `GET /api/todo?priority=HIGH` returns only HIGH priority tasks. `GET /api/todo?completed=false&priority=MEDIUM` returns only incomplete MEDIUM tasks.
 
-- [ ] T020 [US5] Add derived query methods `findByPriority`, `findByCompleted`, and `findByPriorityAndCompleted` to `TodoRepository` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
-- [ ] T021 [US5] Add `getTodos(Priority priority, Boolean completed)` method to `TodoService` that dispatches to the correct repository method based on which parameters are non-null in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [ ] T022 [US5] Update `GET /api/todo` endpoint in `TodoController` to accept optional `@RequestParam` `priority` and `completed`, delegating to the new service method in `src/main/java/com/example/todobackend/controller/TodoController.java`
+- [x] T020 [US5] Add derived query methods `findByPriority`, `findByCompleted`, and `findByPriorityAndCompleted` to `TodoRepository` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
+- [x] T021 [US5] Add `getTodos(Priority priority, Boolean completed)` method to `TodoService` that dispatches to the correct repository method based on which parameters are non-null in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T022 [US5] Update `GET /api/todo` endpoint in `TodoController` to accept optional `@RequestParam` `priority` and `completed`, delegating to the new service method in `src/main/java/com/example/todobackend/controller/TodoController.java`
 
 **Checkpoint**: All 5 user stories independently functional.
 
@@ -119,7 +119,7 @@ All source files live under `src/main/java/com/example/todobackend/`
 
 **Purpose**: Documentation and final validation
 
-- [ ] T023 Create `README.md` at project root documenting prerequisites, database setup, how to run, and example curl commands (see `specs/001-todo-task-management/quickstart.md`)
+- [x] T023 Create `README.md` at project root documenting prerequisites, database setup, how to run, and example curl commands (see `specs/001-todo-task-management/quickstart.md`)
 - [ ] T024 [P] Run smoke test from `specs/001-todo-task-management/quickstart.md` to verify all endpoints respond correctly
 - [ ] T025 [P] Verify CORS by confirming a request from `http://localhost:4200` is not blocked (check response headers include `Access-Control-Allow-Origin`)
 
