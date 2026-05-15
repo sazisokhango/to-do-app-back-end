@@ -1,5 +1,5 @@
 ---
-description: "Task list for To-Do Task Management feature implementation"
+description: "Task list for To-Do Task Management feature implementation — updated to include tests"
 ---
 
 # Tasks: To-Do Task Management
@@ -12,185 +12,174 @@ description: "Task list for To-Do Task Management feature implementation"
 
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (US1–US5)
-- All file paths are relative to the project root
-
-## Path Conventions
-
-All source files live under `src/main/java/com/example/todobackend/`
+- All source paths relative to project root
 
 ---
 
 ## Phase 1: Setup
 
-**Purpose**: Project dependencies and configuration
-
 - [x] T001 Add `spring-boot-starter-validation` and `postgresql` driver dependencies to `pom.xml`
-- [x] T002 Configure PostgreSQL connection in `src/main/resources/application.properties` (url, username, password, JPA DDL auto, show-sql)
+- [x] T002 Configure PostgreSQL connection in `src/main/resources/application.properties`
+- [x] T026 Add `h2` dependency (test scope) to `pom.xml` for in-memory test database
+- [x] T027 Create `src/test/resources/application.properties` configuring H2 in-memory datasource and `spring.jpa.hibernate.ddl-auto=create-drop`
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 2: Foundational
 
-**Purpose**: Shared infrastructure that ALL user stories depend on. No user story work can begin until this phase is complete.
+- [x] T003 Create `Priority` enum in `src/main/java/com/example/todobackend/enums/Priority.java`
+- [x] T004 [P] Create `TodoItem` JPA entity in `src/main/java/com/example/todobackend/entity/TodoItem.java`
+- [x] T005 [P] Create `TodoRequest` DTO in `src/main/java/com/example/todobackend/dto/TodoRequest.java`
+- [x] T006 [P] Create `TodoResponse` DTO in `src/main/java/com/example/todobackend/dto/TodoResponse.java`
+- [x] T007 [P] Create `TodoNotFoundException` in `src/main/java/com/example/todobackend/exception/TodoNotFoundException.java`
+- [x] T008 Create `GlobalExceptionHandler` in `src/main/java/com/example/todobackend/exception/GlobalExceptionHandler.java`
+- [x] T009 [P] Create `CorsConfig` in `src/main/java/com/example/todobackend/config/CorsConfig.java`
+- [x] T010 Create `TodoRepository` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
 
-**⚠️ CRITICAL**: Complete in order — Priority enum must exist before entities and DTOs.
-
-- [x] T003 Create `Priority` enum (`LOW`, `MEDIUM`, `HIGH`) in `src/main/java/com/example/todobackend/enums/Priority.java`
-- [x] T004 [P] Create `TodoItem` JPA entity with all fields, `@PrePersist`/`@PreUpdate` for timestamps, and `@Enumerated(STRING)` for priority in `src/main/java/com/example/todobackend/entity/TodoItem.java`
-- [x] T005 [P] Create `TodoRequest` DTO with `@NotBlank`, `@Size(max=255)` on title and `@FutureOrPresent` on dueDate in `src/main/java/com/example/todobackend/dto/TodoRequest.java`
-- [x] T006 [P] Create `TodoResponse` DTO with all fields matching the contract in `src/main/java/com/example/todobackend/dto/TodoResponse.java`
-- [x] T007 [P] Create `TodoNotFoundException` extending `RuntimeException` in `src/main/java/com/example/todobackend/exception/TodoNotFoundException.java`
-- [x] T008 Create `GlobalExceptionHandler` (`@RestControllerAdvice`) handling `TodoNotFoundException` → 404 and `MethodArgumentNotValidException` → 400, both returning the standard error JSON shape in `src/main/java/com/example/todobackend/exception/GlobalExceptionHandler.java`
-- [x] T009 [P] Create `CorsConfig` implementing `WebMvcConfigurer` allowing all methods and headers from `http://localhost:4200` on `/api/**` in `src/main/java/com/example/todobackend/config/CorsConfig.java`
-- [x] T010 Create `TodoRepository` extending `JpaRepository<TodoItem, Long>` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
-
-**Checkpoint**: Foundation ready — all shared classes exist. User story implementation can now begin.
+**Checkpoint**: Foundation complete.
 
 ---
 
 ## Phase 3: User Story 1 — Create a Task (Priority: P1) 🎯 MVP
 
-**Goal**: A user can submit a new task and receive it back with a generated ID, default priority if omitted, and timestamps.
+**Goal**: A user can submit a new task and receive it back with a generated ID, default priority, and timestamps.
 
-**Independent Test**: `POST /api/todo` with `{"title":"Test"}` returns `201` with `id`, `completed=false`, `priority="MEDIUM"`.
+**Independent Test**: `POST /api/todo` with `{"title":"Test"}` returns `201` with `completed=false`, `priority="MEDIUM"`.
 
-- [x] T011 [US1] Create `TodoService` with a `createTodo(TodoRequest)` method that defaults priority to `MEDIUM` if null and maps to/from `TodoItem` entity in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [x] T012 [US1] Create `TodoController` with `POST /api/todo` endpoint annotated `@Valid`, delegating to `TodoService`, returning `ResponseEntity<TodoResponse>` with status `201` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+### Tests for User Story 1 ⚠️ Write these FIRST — ensure they FAIL before implementation
 
-**Checkpoint**: User Story 1 fully functional. `POST /api/todo` creates and returns a task.
+- [x] T028 [P] [US1] Write test: `POST /api/todo` with valid body returns `201` and correct `TodoResponse` in `src/test/java/com/example/todobackend/controller/CreateTodoTest.java`
+- [x] T029 [P] [US1] Write test: `POST /api/todo` without `priority` returns `201` with `priority=MEDIUM` in `src/test/java/com/example/todobackend/controller/CreateTodoTest.java`
+- [x] T030 [P] [US1] Write test: `POST /api/todo` with past `dueDate` returns `400` with error body in `src/test/java/com/example/todobackend/controller/CreateTodoTest.java`
+- [x] T031 [P] [US1] Write test: `POST /api/todo` with blank `title` returns `400` in `src/test/java/com/example/todobackend/controller/CreateTodoTest.java`
+- [x] T032 [P] [US1] Write test: `POST /api/todo` with `title` > 255 chars returns `400` in `src/test/java/com/example/todobackend/controller/CreateTodoTest.java`
+
+### Implementation for User Story 1
+
+- [x] T011 [US1] Create `TodoService.createTodo()` in `src/main/java/com/example/todobackend/service/TodoService.java`
+- [x] T012 [US1] Create `TodoController` `POST /api/todo` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+
+**Checkpoint**: US1 tests pass, endpoint functional.
 
 ---
 
 ## Phase 4: User Story 2 — View Tasks (Priority: P2)
 
-**Goal**: A user can retrieve all tasks as a list, or a single task by ID. Empty list returns `[]`, unknown ID returns `404`.
+**Goal**: A user can retrieve all tasks or a single task by ID.
 
-**Independent Test**: `GET /api/todo` returns `200` with a list; `GET /api/todo/1` returns the task; `GET /api/todo/999` returns `404`.
+**Independent Test**: `GET /api/todo` returns list; `GET /api/todo/{id}` returns task; unknown ID returns `404`.
 
-- [x] T013 [US2] Add `getAllTodos()` method to `TodoService` returning `List<TodoResponse>` in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [x] T014 [US2] Add `getTodoById(Long id)` method to `TodoService` throwing `TodoNotFoundException` when not found in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [x] T015 [US2] Add `GET /api/todo` and `GET /api/todo/{id}` endpoints to `TodoController` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+### Tests for User Story 2 ⚠️ Write these FIRST
 
-**Checkpoint**: User Stories 1 and 2 independently functional.
+- [x] T033 [P] [US2] Write test: `GET /api/todo` returns `200` with list of tasks in `src/test/java/com/example/todobackend/controller/ViewTodoTest.java`
+- [x] T034 [P] [US2] Write test: `GET /api/todo` with no tasks returns `200` with empty array in `src/test/java/com/example/todobackend/controller/ViewTodoTest.java`
+- [x] T035 [P] [US2] Write test: `GET /api/todo/{id}` with existing ID returns `200` with correct task in `src/test/java/com/example/todobackend/controller/ViewTodoTest.java`
+- [x] T036 [P] [US2] Write test: `GET /api/todo/{id}` with unknown ID returns `404` with error body in `src/test/java/com/example/todobackend/controller/ViewTodoTest.java`
+
+### Implementation for User Story 2
+
+- [x] T013 [US2] Add `getAllTodos()` to `TodoService`
+- [x] T014 [US2] Add `getTodoById()` to `TodoService`
+- [x] T015 [US2] Add `GET /api/todo` and `GET /api/todo/{id}` to `TodoController`
+
+**Checkpoint**: US2 tests pass, view endpoints functional.
 
 ---
 
 ## Phase 5: User Story 3 — Update a Task (Priority: P3)
 
-**Goal**: A user can update any field of an existing task including `completed`. `updatedAt` is refreshed. Invalid input returns `400`, unknown ID returns `404`.
+**Goal**: A user can update any field including `completed`. `updatedAt` refreshes.
 
-**Independent Test**: `PUT /api/todo/1` with new title returns `200` with updated title and refreshed `updatedAt`.
+**Independent Test**: `PUT /api/todo/1` returns `200` with updated fields and refreshed `updatedAt`.
 
-- [x] T016 [US3] Add `updateTodo(Long id, TodoRequest)` method to `TodoService` that applies all fields from the request, saves, and returns `TodoResponse` in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [x] T017 [US3] Add `PUT /api/todo/{id}` endpoint annotated `@Valid` to `TodoController` returning `200` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+### Tests for User Story 3 ⚠️ Write these FIRST
 
-**Checkpoint**: User Stories 1, 2, and 3 independently functional.
+- [x] T037 [P] [US3] Write test: `PUT /api/todo/{id}` with valid body returns `200` with updated fields in `src/test/java/com/example/todobackend/controller/UpdateTodoTest.java`
+- [x] T038 [P] [US3] Write test: `PUT /api/todo/{id}` with `completed=true` returns `200` with `completed=true` in `src/test/java/com/example/todobackend/controller/UpdateTodoTest.java`
+- [x] T039 [P] [US3] Write test: `PUT /api/todo/{id}` with unknown ID returns `404` in `src/test/java/com/example/todobackend/controller/UpdateTodoTest.java`
+- [x] T040 [P] [US3] Write test: `PUT /api/todo/{id}` with blank title returns `400` in `src/test/java/com/example/todobackend/controller/UpdateTodoTest.java`
+
+### Implementation for User Story 3
+
+- [x] T016 [US3] Add `updateTodo()` to `TodoService`
+- [x] T017 [US3] Add `PUT /api/todo/{id}` to `TodoController`
+
+**Checkpoint**: US3 tests pass, update endpoint functional.
 
 ---
 
 ## Phase 6: User Story 4 — Delete a Task (Priority: P4)
 
-**Goal**: A user can permanently delete a task by ID. Returns `204` on success, `404` if not found.
+**Goal**: A user can permanently delete a task. Returns `204` on success, `404` if not found.
 
 **Independent Test**: `DELETE /api/todo/1` returns `204`; subsequent `GET /api/todo/1` returns `404`.
 
-- [x] T018 [US4] Add `deleteTodo(Long id)` method to `TodoService` throwing `TodoNotFoundException` when not found in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [x] T019 [US4] Add `DELETE /api/todo/{id}` endpoint to `TodoController` returning `ResponseEntity<Void>` with status `204` in `src/main/java/com/example/todobackend/controller/TodoController.java`
+### Tests for User Story 4 ⚠️ Write these FIRST
 
-**Checkpoint**: User Stories 1–4 independently functional. Full CRUD complete.
+- [x] T041 [P] [US4] Write test: `DELETE /api/todo/{id}` with existing ID returns `204` with empty body in `src/test/java/com/example/todobackend/controller/DeleteTodoTest.java`
+- [x] T042 [P] [US4] Write test: `DELETE /api/todo/{id}` followed by `GET /api/todo/{id}` returns `404` in `src/test/java/com/example/todobackend/controller/DeleteTodoTest.java`
+- [x] T043 [P] [US4] Write test: `DELETE /api/todo/{id}` with unknown ID returns `404` in `src/test/java/com/example/todobackend/controller/DeleteTodoTest.java`
+
+### Implementation for User Story 4
+
+- [x] T018 [US4] Add `deleteTodo()` to `TodoService`
+- [x] T019 [US4] Add `DELETE /api/todo/{id}` to `TodoController`
+
+**Checkpoint**: US4 tests pass, delete endpoint functional.
 
 ---
 
 ## Phase 7: User Story 5 — Filter Tasks (Priority: P5)
 
-**Goal**: `GET /api/todo` accepts optional `priority` and `completed` query parameters. Both, either, or neither filter may be applied. Invalid filter values return `400`.
+**Goal**: `GET /api/todo` accepts optional `priority` and `completed` query parameters.
 
-**Independent Test**: `GET /api/todo?priority=HIGH` returns only HIGH priority tasks. `GET /api/todo?completed=false&priority=MEDIUM` returns only incomplete MEDIUM tasks.
+**Independent Test**: `GET /api/todo?priority=HIGH` returns only HIGH priority tasks.
 
-- [x] T020 [US5] Add derived query methods `findByPriority`, `findByCompleted`, and `findByPriorityAndCompleted` to `TodoRepository` in `src/main/java/com/example/todobackend/repository/TodoRepository.java`
-- [x] T021 [US5] Add `getTodos(Priority priority, Boolean completed)` method to `TodoService` that dispatches to the correct repository method based on which parameters are non-null in `src/main/java/com/example/todobackend/service/TodoService.java`
-- [x] T022 [US5] Update `GET /api/todo` endpoint in `TodoController` to accept optional `@RequestParam` `priority` and `completed`, delegating to the new service method in `src/main/java/com/example/todobackend/controller/TodoController.java`
+### Tests for User Story 5 ⚠️ Write these FIRST
 
-**Checkpoint**: All 5 user stories independently functional.
+- [x] T044 [P] [US5] Write test: `GET /api/todo?priority=HIGH` returns only `HIGH` priority tasks in `src/test/java/com/example/todobackend/controller/FilterTodoTest.java`
+- [x] T045 [P] [US5] Write test: `GET /api/todo?completed=false` returns only incomplete tasks in `src/test/java/com/example/todobackend/controller/FilterTodoTest.java`
+- [x] T046 [P] [US5] Write test: `GET /api/todo?priority=HIGH&completed=false` returns only matching tasks in `src/test/java/com/example/todobackend/controller/FilterTodoTest.java`
+- [x] T047 [P] [US5] Write test: `GET /api/todo?priority=INVALID` returns `400` in `src/test/java/com/example/todobackend/controller/FilterTodoTest.java`
+
+### Implementation for User Story 5
+
+- [x] T020 [US5] Add filter query methods to `TodoRepository`
+- [x] T021 [US5] Add `getTodos()` filter method to `TodoService`
+- [x] T022 [US5] Add query params to `GET /api/todo` in `TodoController`
+
+**Checkpoint**: US5 tests pass, filtering functional.
 
 ---
 
-## Phase 8: Polish & Cross-Cutting Concerns
+## Phase 8: Polish
 
-**Purpose**: Documentation and final validation
-
-- [x] T023 Create `README.md` at project root documenting prerequisites, database setup, how to run, and example curl commands (see `specs/001-todo-task-management/quickstart.md`)
-- [ ] T024 [P] Run smoke test from `specs/001-todo-task-management/quickstart.md` to verify all endpoints respond correctly
-- [ ] T025 [P] Verify CORS by confirming a request from `http://localhost:4200` is not blocked (check response headers include `Access-Control-Allow-Origin`)
+- [x] T023 Create `README.md`
+- [x] T024 [P] Run smoke test from `specs/001-todo-task-management/quickstart.md`
+- [x] T025 [P] Verify CORS headers include `Access-Control-Allow-Origin` for `localhost:4200`
 
 ---
 
 ## Dependencies & Execution Order
 
-### Phase Dependencies
+- T026, T027 must complete before any test tasks (T028–T047)
+- Test tasks within each story are independent [P] — write them all before implementing
+- Implementation tasks are already complete [x] — tests validate what was built
 
-- **Setup (Phase 1)**: No dependencies — start immediately
-- **Foundational (Phase 2)**: Depends on Phase 1 — **blocks all user stories**
-- **US1 (Phase 3)**: Depends on Foundational — MVP increment
-- **US2 (Phase 4)**: Depends on Foundational — can start after Phase 2 (independent of US1)
-- **US3 (Phase 5)**: Depends on US2 (needs findById logic)
-- **US4 (Phase 6)**: Depends on Foundational — can start after Phase 2
-- **US5 (Phase 7)**: Depends on US2 (GET /api/todo must exist first)
-- **Polish (Phase 8)**: Depends on all user stories complete
-
-### Within Each Phase
-
-- T003 must complete before T004, T005, T006, T010
-- T007 must complete before T008
-- T011 must complete before T012
-- T013, T014 must complete before T015
-- T016 must complete before T017
-- T018 must complete before T019
-- T020, T021 must complete before T022
-
-### Parallel Opportunities
+## Parallel Opportunities
 
 ```bash
-# Phase 2 — after T003 completes, these can run in parallel:
-T004  Create TodoItem entity
-T005  Create TodoRequest DTO
-T006  Create TodoResponse DTO
-T007  Create TodoNotFoundException
-T009  Create CorsConfig
-
-# Phase 8 — can run in parallel:
-T024  Smoke test
-T025  CORS verification
+# All test tasks within a story can be written in parallel:
+T028, T029, T030, T031, T032  ← US1 tests (all in CreateTodoTest.java)
+T033, T034, T035, T036        ← US2 tests (all in ViewTodoTest.java)
+T037, T038, T039, T040        ← US3 tests (all in UpdateTodoTest.java)
+T041, T042, T043              ← US4 tests (all in DeleteTodoTest.java)
+T044, T045, T046, T047        ← US5 tests (all in FilterTodoTest.java)
 ```
-
----
-
-## Implementation Strategy
-
-### MVP First (User Story 1 Only)
-
-1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational
-3. Complete Phase 3: User Story 1 (T011, T012)
-4. **STOP and VALIDATE**: `POST /api/todo` works end-to-end
-5. Continue with remaining stories
-
-### Incremental Delivery
-
-1. Phases 1–2 → Foundation ready
-2. Phase 3 → Create tasks working (MVP)
-3. Phase 4 → View tasks working
-4. Phase 5 → Update tasks working
-5. Phase 6 → Delete tasks working
-6. Phase 7 → Filtering working
-7. Phase 8 → Polish and documentation
-
----
 
 ## Notes
 
-- `[P]` tasks have no dependencies on incomplete tasks and operate on different files
-- Each user story phase is independently completable and testable
-- `updatedAt` refresh is handled by `@PreUpdate` on the entity (T004) — no service logic needed
-- Priority defaulting to `MEDIUM` is handled in the service layer (T011), not in the DTO
-- Filtering dispatch logic in T021 uses `if/else` on null-checks — no Specification pattern needed (per constitution: complexity must be justified)
+- Tests use `@SpringBootTest` + `@AutoConfigureMockMvc` + H2 in-memory DB (T026, T027)
+- Each test class uses `@Transactional` to reset DB state between tests
+- Error response shape is fixed by the constitution — tests must assert `status`, `error`, `message` fields
+- Implementation is already done — tests verify it matches the spec's acceptance scenarios
